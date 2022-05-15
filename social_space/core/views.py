@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from .models import Profile
 
 def throwError(request, message, num_errors=0):
     messages.info(request, message)
     return num_errors + 1
 
+@login_required(login_url='login')
 def index(request):
     return render(request, 'index.html')
 
@@ -56,7 +58,7 @@ def signup(request):
     new_profile = Profile.objects.create(user=user_model, id_user=user_model.id)
     new_profile.save()
 
-    return redirect('signup')
+    return redirect('/')
 
 def login(request):
     if request.method != 'POST':
@@ -78,6 +80,7 @@ def login(request):
     auth.login(request, user)
     return redirect('/')
 
+@login_required(login_url='login')
 def logout(request):
     auth.logout(request)
     return redirect('login')
