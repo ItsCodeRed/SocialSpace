@@ -13,6 +13,22 @@ def throwError(request, message, num_errors=0):
 def index(request):
     return render(request, 'index.html')
 
+@login_required(login_url='login')
+def settings(request):
+    user_profile = Profile.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        user_profile.profileimg = image if image != None else user_profile.profileimg
+        user_profile.user.first_name = request.POST['first_name']
+        user_profile.user.last_name = request.POST['last_name']
+        user_profile.user.save()
+        user_profile.bio = request.POST['bio']
+        user_profile.location = request.POST['location']
+        user_profile.save()
+
+    return render(request, 'setting.html', {'user_profile': user_profile})
+
 def signup(request):
     if request.method != 'POST':
         return render(request, 'signup.html')
@@ -52,13 +68,15 @@ def signup(request):
     user.save()
 
     # Log user in and redirect to settings page
+    user_login = auth.authenticate(username=username, password=password)
+    auth.login(request, user_login)
 
     # Create a profile object for the new user
     user_model = User.objects.get(username=username)
     new_profile = Profile.objects.create(user=user_model, id_user=user_model.id)
     new_profile.save()
 
-    return redirect('/')
+    return redirect('settings')
 
 def login(request):
     if request.method != 'POST':
