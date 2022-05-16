@@ -1,17 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib import messages, auth
+from django.contrib import auth
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Profile
-
-def throwError(request, message, num_errors=0):
-    messages.info(request, message)
-    return num_errors + 1
+from .view_utils import throwError, checkImageFile, checkVideoFile
 
 @login_required(login_url='login')
 def index(request):
-    return render(request, 'index.html')
+    user_profile = Profile.objects.get(user=request.user)
+
+    return render(request, 'index.html', {'user_profile': user_profile})
 
 @login_required(login_url='login')
 def settings(request):
@@ -19,7 +18,10 @@ def settings(request):
 
     if request.method == 'POST':
         image = request.FILES.get('image')
-        user_profile.profileimg = image if image != None else user_profile.profileimg
+
+        if image != None and checkImageFile(image) != None:
+            user_profile.profileimg = image
+
         user_profile.user.first_name = request.POST['first_name']
         user_profile.user.last_name = request.POST['last_name']
         user_profile.user.save()
@@ -28,6 +30,10 @@ def settings(request):
         user_profile.save()
 
     return render(request, 'setting.html', {'user_profile': user_profile})
+
+@login_required(login_url='login')
+def upload(request):
+    return HttpResponse('<h1>Upload View</h1>')
 
 def signup(request):
     if request.method != 'POST':
