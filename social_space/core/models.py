@@ -16,14 +16,14 @@ class Profile(models.Model):
         return self.user.username
 
 class Post(models.Model):
-    ud = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user = models.CharField(max_length=100)
-    yt_link = models.CharField(max_length=50)
-    video = models.FileField(upload_to='post_videos')
-    image = models.ImageField(upload_to='post_images')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    yt_id = models.CharField(default="", null=True, max_length=50)
+    video = models.FileField(null=True, upload_to='post_videos')
+    image = models.ImageField(null=True, upload_to='post_images')
     caption = models.CharField(max_length=500, blank=True)
     date = models.DateTimeField(default=datetime.now)
     likes = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.user
+        return self.profile.user.username

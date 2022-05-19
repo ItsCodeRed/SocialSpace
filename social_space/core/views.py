@@ -3,14 +3,15 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Profile
-from .view_utils import throwError, checkImageFile, checkVideoFile
+from .models import Profile, Post
+from .view_utils import throwError, checkImageFile, checkVideoFile, splitFeed, parseVideoId
 
 @login_required(login_url='login')
 def index(request):
     user_profile = Profile.objects.get(user=request.user)
+    feed = splitFeed(Post.objects.all(), 3)
 
-    return render(request, 'index.html', {'user_profile': user_profile})
+    return render(request, 'index.html', {'user_profile': user_profile, 'feed': feed})
 
 @login_required(login_url='login')
 def settings(request):
@@ -19,7 +20,7 @@ def settings(request):
     if request.method == 'POST':
         image = request.FILES.get('image')
 
-        if image != None and checkImageFile(image) != None:
+        if checkImageFile(image) != None:
             user_profile.profileimg = image
 
         user_profile.user.first_name = request.POST['first_name']
@@ -33,7 +34,21 @@ def settings(request):
 
 @login_required(login_url='login')
 def upload(request):
-    return HttpResponse('<h1>Upload View</h1>')
+    if request.method == 'POST':
+        file = request.FILES.get('file_upload')            
+        video = file if checkVideoFile(file) else None
+        image = file if checkImageFile(file) else None
+
+        youtube_id = ''
+        if 'video_link' in request.POST:
+            youtube_id = parseVideoId(request.POST['video_link'])
+        caption = request.POST['caption']
+        user_profile = Profile.objects.get(user=request.user)
+
+        new_post = Post.objects.create(profile=user_profile, image=image, video=video, yt_id=youtube_id, caption=caption)
+        new_post.save()
+
+    return redirect('/')
 
 def signup(request):
     if request.method != 'POST':
