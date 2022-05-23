@@ -3,15 +3,54 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Profile, Post
+from .models import Profile, Post, LikePost
 from .view_utils import throwError, checkImageFile, checkVideoFile, splitFeed, parseVideoId
 
 @login_required(login_url='login')
 def index(request):
     user_profile = Profile.objects.get(user=request.user)
-    feed = splitFeed(Post.objects.all(), 3)
+    posts = Post.objects.all().order_by('date').reverse()
+    feed = splitFeed(posts, 3)
 
     return render(request, 'index.html', {'user_profile': user_profile, 'feed': feed})
+
+@login_required(login_url='login')
+def upload(request):
+    if request.method == 'POST':
+        file = request.FILES.get('file_upload')            
+        video = file if checkVideoFile(file) else None
+        image = file if checkImageFile(file) else None
+
+        youtube_id = ''
+        if 'video_link' in request.POST:
+            youtube_id = parseVideoId(request.POST['video_link'])
+        caption = request.POST['caption']
+        user_profile = Profile.objects.get(user=request.user)
+
+        new_post = Post.objects.create(profile=user_profile, image=image, video=video, yt_id=youtube_id, caption=caption)
+        new_post.save()
+
+    return redirect('/')
+
+@login_required(login_url='login')
+def like_post(request):
+    username = request.user.username
+    post_id = request.GET.get('post_id')
+
+    post = Post.objects.get(id=post_id)
+    my_like = LikePost.objects.filter(post_id=post_id, username=username).first()
+
+    if my_like == None:
+        new_like = LikePost.objects.create(post_id=post_id, username=username)
+        new_like.save()
+        post.likes += 1
+        post.save()
+    else:
+        my_like.delete()
+        post.likes -= 1
+        post.save()
+
+    return redirect('/')
 
 @login_required(login_url='login')
 def settings(request):
@@ -31,24 +70,6 @@ def settings(request):
         user_profile.save()
 
     return render(request, 'setting.html', {'user_profile': user_profile})
-
-@login_required(login_url='login')
-def upload(request):
-    if request.method == 'POST':
-        file = request.FILES.get('file_upload')            
-        video = file if checkVideoFile(file) else None
-        image = file if checkImageFile(file) else None
-
-        youtube_id = ''
-        if 'video_link' in request.POST:
-            youtube_id = parseVideoId(request.POST['video_link'])
-        caption = request.POST['caption']
-        user_profile = Profile.objects.get(user=request.user)
-
-        new_post = Post.objects.create(profile=user_profile, image=image, video=video, yt_id=youtube_id, caption=caption)
-        new_post.save()
-
-    return redirect('/')
 
 def signup(request):
     if request.method != 'POST':
