@@ -9,13 +9,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="" />
     <meta name="keywords" content="" />
-	<title>Profile - {{username}}</title>
+	<title>Profile - {{user.username}}</title>
    <!-- <link rel="icon" href="images/fav.png" type="image/png" sizes="16x16"> -->
     
     <link rel="stylesheet" href="{% static 'css/main.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/color.css' %}">
-    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+	<link rel="stylesheet" href="{% static 'css/responsive.css' %}">
 
 </head>
 <body>
@@ -27,13 +27,13 @@
 	<section>
 			<div class="feature-photo">
 				<figure><img src="{% static 'images/resources/timeline-1.jpg' %}" alt=""></figure>
-				<form>
-					<div class="add-btn">
-					<span style="color: white; font-size: 27px; margin-right: 520px;"><b><u><a href="/">Home</a></u></b></span>
-					<span style="color: white; font-size: 27px;"><b>11 Post</b></span>
+				<form style="background-color: red;">
+					<div class="add-btn" style="width: 100%; text-align: right;">
+					<span style="color: white; font-size: 27px; float: left; margin-left: 400px;"><b><u><a href="/">Home</a></u></b></span>
+					<span style="color: white; font-size: 27px;"><b>{{num_posts}} {% if num_posts == 1 %} post {% else %} posts {% endif %}</b></span>
 					<span style="color: white; font-size: 27px;"><b>1.7m followers</b></span>
 					<span style="color: white; font-size: 27px;"><b>3.5k following</b></span>
-					<a href="" title="" data-ripple=""><button style="background-color: #ffc0cb; border: #ffc0cb;">Follow</button></a>
+					<a class="justify-end" href="" title="" data-ripple=""><button style="background-color: #ffc0cb; border: #ffc0cb;">Follow</button></a>
 					
 					</div>
 				</form>
@@ -48,9 +48,9 @@
 				<div class="container-fluid">
 					<div class="row merged">
 						<div class="col-lg-2 col-sm-3">
-							<div class="user-avatar">
+							<div class="user-avatar" style="width: 250px;">
 								<figure>
-									<img src="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" style="height: 250px; width: 100%;" alt="">
+									<img src={{profile.profileimg.url}} style="height: 250px; width: 250px;" alt="">
 									<form class="edit-phto">
 										<i class="fa fa-camera-retro"></i>
 										<label class="fileContainer">
@@ -64,7 +64,7 @@
 							<div class="timeline-info">
 								<ul>
 									<li class="admin-name">
-									  <h5 style="color: black;white-space: nowrap; width: 110px; font-size: 27px;"><b>@username</b><!--<i class="fa fa-check-circle" style="color: #48dbfb;" aria-hidden="true"></i>--></h5>
+									  <h5 style="color: black;white-space: nowrap; width: 110px; font-size: 27px;"><b>{{user.username}}</b><!--<i class="fa fa-check-circle" style="color: #48dbfb;" aria-hidden="true"></i>--></h5>
 									  <!--<span>Group Admin</span>-->
 									</li>
 									<!--<li>
@@ -92,7 +92,7 @@
 		</section><!-- top area -->
 		<section>
 			<div class="bio">
-				Bio goes here...
+				{{profile.bio}}
 			</div>
 		</section>
 		
@@ -122,23 +122,27 @@
 							<div class="col-lg-6">
 								<div class="central-meta">
 									<ul class="photos">
-					
-										<li>
-											<a class="strip" href="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
-												<img src="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" style="height: 250px; width: 300px;" alt=""></a>
-										</li>
-
-										<li>
-											<a class="strip" href="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
-												<img src="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" style="height: 250px; width: 300px;" alt=""></a>
-										</li>
-
-										<li>
-											<a class="strip" href="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
-												<img src="https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png" style="height: 250px; width: 300px;" alt=""></a>
-										</li>
 										
-										
+										{% for post in posts %}
+											<li>
+												{% if post.image %}
+												<a class="strip" href="{{post.image.url}}" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
+													<img src="{{post.image.url}}" style="height: 250px; width: 400px;" alt=""></a>
+												</a>
+												{% elif post.video %}
+												<a class="strip" href="{{post.video.url}}" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
+													<video src="{{post.video.url}}" style="height: 250px; width: 100%;" controls>
+														Your browser does not support this video format.
+													</video> 
+												</a>
+												{% elif post.yt_id != "" %}
+												<a class="strip" href="https://www.youtube.com/embed/{{post.yt_id}}" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
+													<iframe src="https://www.youtube.com/embed/{{post.yt_id}}"
+													style="height: 250px; width: 100%;" allowfullscreen></iframe>
+												</a>
+												{% endif %}
+											</li>
+										{% endfor %}
 									</ul>
 									<!--<div class="lodmore"><button class="btn-view btn-load-more"></button></div>-->
 								</div><!-- photos -->

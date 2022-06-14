@@ -53,6 +53,22 @@ def like_post(request):
     return redirect('/')
 
 @login_required(login_url='login')
+def profile(request, user):
+    user_object = User.objects.get(username=user)
+    user_profile = Profile.objects.get(user=user_object)
+    user_posts = Post.objects.filter(profile=user_profile)
+    num_posts = len(user_posts)
+
+    context = {
+        'user': user_object,
+        'profile': user_profile,
+        'posts': user_posts,
+        'num_posts': num_posts
+    }
+
+    return render(request, 'profile.html', context)
+
+@login_required(login_url='login')
 def settings(request):
     user_profile = Profile.objects.get(user=request.user)
 

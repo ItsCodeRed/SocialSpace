@@ -3295,9 +3295,8 @@ nav.breadcrumb {
 
 .photos > li {
     display: inline-block;
-    min-width: 32.3%;
-    width: 32.3%;
-    margin: 0 1.3px;
+    min-width: 33%;
+    width: 33%;
 }
 
 .photos > li:hover a img {
