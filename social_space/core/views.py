@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Profile, Post, LikePost
+from .models import Profile, Post, LikePost, FollowerCount
 from .view_utils import throwError, checkImageFile, checkVideoFile, splitFeed, parseVideoId
 
 @login_required(login_url='login')
@@ -58,15 +58,42 @@ def profile(request, user):
     user_profile = Profile.objects.get(user=user_object)
     user_posts = Post.objects.filter(profile=user_profile)
     num_posts = len(user_posts)
+    follower_count = len(FollowerCount.objects.filter(user=user))
+    following_count = len(FollowerCount.objects.filter(follower=user))
+
+    if FollowerCount.objects.filter(follower=request.user.username,user=user).first():
+        button_text = 'Unfollow'
+    else:
+        button_text = 'Follow'
 
     context = {
-        'user': user_object,
+        'user_object': user_object,
         'profile': user_profile,
         'posts': user_posts,
-        'num_posts': num_posts
+        'num_posts': num_posts,
+        'button_text': button_text,
+        'follower_count': follower_count,
+        'following_count': following_count
     }
 
     return render(request, 'profile.html', context)
+
+@login_required(login_url='login')
+def follow(request):
+    if request.method == 'POST':
+        follower = request.user.username
+        user = request.POST['user']
+
+        if FollowerCount.objects.filter(follower=follower,user=user).first():
+            delete_follower = FollowerCount.objects.get(follower=follower,user=user)
+            delete_follower.delete()
+            return redirect('/profile/' + user)
+        else:
+            new_follower = FollowerCount.objects.create(follower=follower,user=user)
+            new_follower.save()
+            return redirect('/profile/' + user)
+    else:
+        return redirect('/')
 
 @login_required(login_url='login')
 def settings(request):

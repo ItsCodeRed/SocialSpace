@@ -1092,9 +1092,8 @@ header.sticky {
 
 .add-btn > a:hover {
     border: 1px solid pink;
-    background-color: transparent !important;
+    background-color: rgb(157, 108, 109) !important;
     color: #000 !important;
-
 }
 
 .add-btn > a {
