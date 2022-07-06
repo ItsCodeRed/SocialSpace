@@ -1598,6 +1598,15 @@ header .header_inner .left-side .header_search .icon-search {
 header .header_inner .left-side .header_search .icon-search svg {
   width: 20px;
   color: #9ca3af;
+  transition-property: all;
+  transition-duration: 0.1s;
+  transition-timing-function: ease;
+  transition-delay: 0s;
+}
+
+header .header_inner .left-side .header_search .icon-search svg:hover {
+  width: 25px;
+  color: #787f8a;
 }
 
 header .header_inner .left-side .triger {

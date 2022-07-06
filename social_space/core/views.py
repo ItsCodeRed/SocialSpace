@@ -5,11 +5,23 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Profile, Post, LikePost, FollowerCount
 from .view_utils import throwError, checkImageFile, checkVideoFile, splitFeed, parseVideoId
+from itertools import chain
 
 @login_required(login_url='login')
 def index(request):
     user_profile = Profile.objects.get(user=request.user)
-    posts = Post.objects.all().order_by('date').reverse()
+
+    post_ids = set()
+
+    following_relations = FollowerCount.objects.filter(follower=request.user.username)
+    for following_relation in following_relations:
+        user = User.objects.get(username=following_relation.user)
+        profile = Profile.objects.get(user=user)
+        posts = Post.objects.filter(profile=profile).all()
+        for post in posts:
+            post_ids.add(post.id)
+
+    posts = Post.objects.filter(id__in = post_ids).all().order_by('date').reverse()
     feed = splitFeed(posts, 3)
 
     return render(request, 'index.html', {'user_profile': user_profile, 'feed': feed})
@@ -31,6 +43,10 @@ def upload(request):
         new_post.save()
 
     return redirect('/')
+
+@login_required(login_url='login')
+def search(request):
+    return render(request, 'search.html')
 
 @login_required(login_url='login')
 def like_post(request):
