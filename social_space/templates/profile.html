@@ -38,9 +38,9 @@
 					<input type="hidden" value="{{user_object.username}}" name="user"/>
 
 					{% if user_object.username == user.username %}
-					<a href="/settings" class="justify-end" title="" data-ripple=""><button type="button" style="background-color: transparent;">Settings</button></a>
+					<a href="/settings" class="justify-end" title="" data-ripple="" style="padding: 0px;"><button type="button" style="background-color: transparent; width: 72px; height: 32px;">Settings</button></a>
 					{% else %}
-					<a class="justify-end" title="" data-ripple=""><button type="submit" style="background-color: transparent;">{{button_text}}</button></a>
+					<a class="justify-end" title="" data-ripple="" style="padding: 0px;"><button type="submit" style="background-color: transparent; width: 72px; height: 32px;">{{button_text}}</button></a>
 					{% endif %}
 
 					</div>

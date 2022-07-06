@@ -6,17 +6,20 @@ from django.contrib.auth.decorators import login_required
 from .models import Profile, Post, LikePost, FollowerCount
 from .view_utils import throwError, checkImageFile, checkVideoFile, splitFeed, parseVideoId
 from itertools import chain
+import random
 
 @login_required(login_url='login')
 def index(request):
     user_profile = Profile.objects.get(user=request.user)
 
+    followed_users = []
     post_ids = set()
 
     following_relations = FollowerCount.objects.filter(follower=request.user.username)
     for following_relation in following_relations:
         user = User.objects.get(username=following_relation.user)
         profile = Profile.objects.get(user=user)
+        followed_users.append(profile)
         posts = Post.objects.filter(profile=profile).all()
         for post in posts:
             post_ids.add(post.id)
@@ -24,7 +27,12 @@ def index(request):
     posts = Post.objects.filter(id__in = post_ids).all().order_by('date').reverse()
     feed = splitFeed(posts, 3)
 
-    return render(request, 'index.html', {'user_profile': user_profile, 'feed': feed})
+    all_users = Profile.objects.all()
+    suggestions = [x for x in list(all_users) if (x not in followed_users and x != user_profile)]
+    random.shuffle(suggestions)
+    suggestions = list(chain(suggestions))
+
+    return render(request, 'index.html', {'user_profile': user_profile, 'feed': feed, 'suggestions': suggestions[:4]})
 
 @login_required(login_url='login')
 def upload(request):
@@ -46,7 +54,16 @@ def upload(request):
 
 @login_required(login_url='login')
 def search(request):
-    return render(request, 'search.html')
+    user_profile = Profile.objects.get(user=request.user)
+
+    search_term = ''
+    if request.GET.get('username'):
+        search_term = request.GET['username']
+
+    found_users = User.objects.filter(username__icontains=search_term)
+    search_result = Profile.objects.filter(user__in=found_users)
+
+    return render(request, 'search.html', {'user_profile': user_profile, 'search_term': search_term, 'search_results': search_result})
 
 @login_required(login_url='login')
 def like_post(request):
@@ -103,10 +120,16 @@ def follow(request):
         if FollowerCount.objects.filter(follower=follower,user=user).first():
             delete_follower = FollowerCount.objects.get(follower=follower,user=user)
             delete_follower.delete()
+            profile = Profile.objects.get(user=User.objects.get(username=user))
+            profile.follower_count -= 1
+            profile.save()
             return redirect('/profile/' + user)
         else:
             new_follower = FollowerCount.objects.create(follower=follower,user=user)
             new_follower.save()
+            profile = Profile.objects.get(user=User.objects.get(username=user))
+            profile.follower_count += 1
+            profile.save()
             return redirect('/profile/' + user)
     else:
         return redirect('/')

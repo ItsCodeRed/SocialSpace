@@ -11,6 +11,7 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, blank=True)
     profileimg = models.ImageField(upload_to='profile_images', default='blank-profile-picture.png')
     location = models.CharField(max_length=100, blank=True)
+    follower_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username

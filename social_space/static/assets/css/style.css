@@ -1570,10 +1570,8 @@ header .header_inner .left-side .header_search {
 header .header_inner .left-side .header_search input {
   margin: 0;
   height: 42px;
-  -webkit-box-shadow: none;
-          box-shadow: none;
-  padding-left: 30px;
-  width: 400px;
+  margin-left: 32px;
+  width: 300px;
   background-color: transparent;
 }
 
@@ -1587,6 +1585,8 @@ header .header_inner .left-side .header_search .icon-search {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  box-shadow: 0 1px 4px 0px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
